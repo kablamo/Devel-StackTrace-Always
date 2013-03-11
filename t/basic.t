@@ -1,9 +1,5 @@
 #use Test::Most;
-use Devel::StackTrace::Always boop => { foo => 1, boo => 2, roo => 3 };
-#use Carp::Always;
-
-#die "oops";
-#bop();
+use Devel::StackTrace::Always ignore => [qw/sub2 sub4/];
 
 sub1();
 sub sub1 { sub2() }

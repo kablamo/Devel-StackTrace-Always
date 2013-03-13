@@ -5,7 +5,8 @@ my @ignore;
 
 sub import {
     my ($class, %args) = @_;
-    @ignore = @{ $args{ignore} };
+    push @ignore, @{ $args{ignore} };
+    push @ignore, @{ $args{i} };
 }
 
 sub _die  { die  error_message(@_) }
@@ -66,10 +67,10 @@ END {
     sub snakes { die('boop') };
 
     # output looks like:
-    boop at predators.pl line 9.
-            main::snakes at predators.pl line 8
-            main::lions at predators.pl line 7
-            main::wolves at predators.pl line 3
+    # boop at predators.pl line 9.
+    #         main::snakes at predators.pl line 8
+    #         main::lions at predators.pl line 7
+    #         main::wolves at predators.pl line 3
 
 
 =head1 DESCRIPTION

@@ -8,16 +8,25 @@ sub import {
     @ignore = @{ $args{ignore} };
 }
 
-sub _die {
+sub _die  { die  error_message(@_) }
+sub _warn { warn error_message(@_) }
+
+sub error_message {
+    my $msg = join('', @_);
+
     my $trace = Devel::StackTrace->new;
+
     while (my $frame = $trace->next_frame) {
         next if $frame->subroutine eq 'Devel::StackTrace::new';
         next if $frame->subroutine eq 'Devel::StackTrace::Always';
         next if $frame->subroutine eq 'Devel::StackTrace::Always::_die';
+        next if $frame->subroutine eq 'Devel::StackTrace::Always::error_message';
         next if _skip_this_sub($frame);
 
-        print "\t" . $frame->as_string . "\n";
+        $msg .= "\t" . $frame->as_string . "\n";
     }
+
+    return $msg;
 };
 
 # returns 1 if we should skip this sub

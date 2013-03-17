@@ -9,11 +9,19 @@ sub import {
     push @ignore, @{ $args{i} };
 }
 
-sub _die  { die  error_message(@_) }
-sub _warn { warn error_message(@_) }
+sub _die  { die  error_message('die',  @_) }
+sub _warn { warn error_message('warn', @_) }
 
 sub error_message {
-    my $msg = join('', @_);
+    my $action = shift;
+    my $msg;
+
+    $msg .= shift;
+#    my @errors = split(/\n/, shift @_);
+#    foreach $error (@errors) {
+#        next if _skip_this_sub($error);
+#        $msg .= ">> " . $error . "\n";
+#    }
 
     my $trace = Devel::StackTrace->new;
 
@@ -22,9 +30,9 @@ sub error_message {
         next if $frame->subroutine eq 'Devel::StackTrace::Always';
         next if $frame->subroutine eq 'Devel::StackTrace::Always::_die';
         next if $frame->subroutine eq 'Devel::StackTrace::Always::error_message';
-        next if _skip_this_sub($frame);
+        next if _skip_this_sub($frame->subroutine);
 
-        $msg .= "\t" . $frame->as_string . "\n";
+        $msg .= "   " . $frame->as_string . "\n";
     }
 
     return $msg;
@@ -33,10 +41,10 @@ sub error_message {
 # returns 1 if we should skip this sub
 # returns 0 if we should not skip this sub
 sub _skip_this_sub {
-    my $frame = shift or die;
+    my $subroutine = shift or die;
 
     foreach my $regex (@ignore) {
-        return 1 if $frame->subroutine =~ /$regex/;
+        return 1 if $subroutine =~ /$regex/;
     }
 
     return 0;
@@ -73,6 +81,13 @@ END {
     #         main::wolves at predators.pl line 3
 
 
+    # command line use
+    perl -MDevel::StackTrace::Always predators.pl 
+
+    # filter out sharks and bears
+    perl '-MDevel::StackTrace::Always i => [qw/sharks bears/]' predators.pl
+
+
 =head1 DESCRIPTION
 
 This module is inspired by Carp::Always.  It is meant as a debugging aid.   It
@@ -87,8 +102,6 @@ Plack to be part of the stacktrace.
 =head1 MORE IDEAS
 
 =over4
-
-=item Figure out how to ignore stuff via the command line
 
 =item Shorter module name (alias) for use on the command line
 
